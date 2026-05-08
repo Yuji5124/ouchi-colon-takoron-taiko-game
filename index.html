@@ -10,171 +10,431 @@ body {
   width: 390px; height: 844px;
   overflow: hidden;
   background: #1a0a2e;
-  font-family: sans-serif;
+  font-family: 'Hiragino Maru Gothic ProN', 'M PLUS Rounded 1c', sans-serif;
   position: relative;
   margin: 0 auto;
 }
-.screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; }
-.screen.active { display: flex; }
+.screen { position: absolute; inset: 0; display: none; }
+button:focus { outline: none; }
+.screen.active { display: block; }
 .bg {
   position: absolute; inset: 0;
   background-size: cover; background-position: center;
   z-index: 0;
 }
-.bg-fallback { background-color: #2a0a4e; }
-.content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
+.bg-fallback { background: linear-gradient(160deg, #2a0a5e 0%, #1a0a2e 60%, #0a1a4e 100%); }
 
-/* Start screen */
-#start-screen .logo-img { width: 280px; min-height: 80px; object-fit: contain; }
-#start-screen .start-btn { cursor: pointer; border: none; background: none; padding: 0; }
-#start-screen .start-btn img { width: 200px; min-height: 60px; object-fit: contain; }
-#start-screen .start-btn-fallback {
-  display: none;
-  background: #ff6b35; color: #fff; font-size: 24px; font-weight: bold;
-  border: none; border-radius: 40px; padding: 16px 48px; cursor: pointer;
+/* ─── shared panel ─── */
+.s-panel {
+  position: relative; width: 110px; height: 56px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.s-panel .p-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.s-panel .p-inner {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.s-panel .p-label { font-size: 11px; font-weight: 900; color: #ffe; text-shadow: 0 1px 3px #000; }
+.s-panel .p-val   { font-size: 22px; font-weight: 900; color: #ffe44d; text-shadow: 0 0 8px #ff0, 0 2px 0 #a60; }
+.s-panel.chain-col .p-val { color: #7fffff; text-shadow: 0 0 10px #0ff, 0 2px 0 #006; }
+.s-panel.star-col  .p-val { font-size: 20px; }
+.s-panel.no-img { background: rgba(0,0,0,0.55); border-radius: 14px; }
+.s-panel.no-img.chain-col { border: 2px solid #0ff; }
+.s-panel.no-img.star-col  { border: 2px solid #ffe44d; }
+.s-panel.no-img.score-col { border: 2px solid #f0a; }
+
+/* ─── top bar ─── */
+.top-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 8px; z-index: 5;
+}
+.top-bar .mid { display: flex; align-items: center; justify-content: center; flex: 1; overflow: hidden; }
+
+/* ─── decorative helpers ─── */
+.deco { position: absolute; pointer-events: none; }
+
+
+/* ═══════════════ START SCREEN ═══════════════ */
+
+#s-logo {
+  position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+  z-index: 3; width: 370px; text-align: center;
+}
+#s-logo img { width: 360px; max-height: 114px; object-fit: contain; }
+#s-logo .fb {
+  display: none; font-size: 42px; font-weight: 900; color: #fff;
+  text-shadow: 0 0 20px #f0a, 0 0 40px #f0a; line-height: 1.1;
+}
+#s-logo .fb span { font-size: 18px; color: #ffb0e0; display: block; }
+
+#s-instruct {
+  position: absolute; top: 182px; left: 50%; transform: translateX(-50%);
+  z-index: 3; width: 340px; text-align: center;
+}
+#s-instruct img { width: 320px; object-fit: contain; }
+#s-instruct .fb {
+  display: none; background: rgba(255,180,0,0.9); border-radius: 20px;
+  padding: 7px 18px; font-size: 15px; font-weight: 900; color: #5a2000;
+  border: 2px solid #ff9900;
 }
 
-/* Game screen */
-#game-screen { background: #0a0a1e; }
-.game-layout { width: 100%; height: 844px; display: flex; flex-direction: column; align-items: center; position: relative; }
-.score-area { position: absolute; top: 16px; left: 0; right: 0; display: flex; justify-content: center; z-index: 2; }
-.score-panel { position: relative; display: flex; align-items: center; justify-content: center; }
-.score-panel img { width: 200px; min-height: 60px; object-fit: contain; }
-.score-text {
-  position: absolute; font-size: 28px; font-weight: bold;
-  color: #fff; text-shadow: 0 0 8px #f0a;
+#s-takoron { position: absolute; top: 240px; right: 28px; z-index: 3; }
+#s-takoron img { width: 192px; object-fit: contain; }
+
+#s-mikaro { position: absolute; bottom: 132px; left: 2px; z-index: 3; }
+#s-mikaro img { width: 126px; object-fit: contain; }
+
+#s-taiko {
+  position: absolute; bottom: 148px; left: 50%; transform: translateX(-50%);
+  z-index: 3;
 }
-.score-fallback {
-  background: rgba(0,0,0,0.6); border: 2px solid #f0a;
-  border-radius: 12px; padding: 8px 24px;
-  font-size: 28px; font-weight: bold; color: #fff;
+#s-taiko img { width: 146px; object-fit: contain; }
+
+#s-btn-wrap {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  z-index: 4;
+}
+.start-btn { border: none; background: none; padding: 0; cursor: pointer; }
+.start-btn img { width: 240px; object-fit: contain; transition: transform 0.08s; }
+.start-btn:active img { transform: scale(0.91); }
+#s-btn-fb {
+  display: none; background: linear-gradient(135deg, #ff6b35, #ff0090);
+  color: #fff; font-size: 28px; font-weight: 900;
+  border: none; border-radius: 50px; padding: 18px 60px; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255,0,128,0.7);
 }
 
-.takoron-area {
-  position: absolute; top: 100px; left: 0; right: 0;
-  display: flex; justify-content: center; align-items: flex-end;
-  height: 280px;
-}
-.takoron-img { width: 200px; object-fit: contain; transition: transform 0.08s; }
-.takoron-img.hit { transform: scale(1.15); }
 
-.taiko-area {
-  position: absolute; bottom: 220px; left: 0; right: 0;
-  display: flex; justify-content: center;
-}
-.taiko-img { width: 180px; object-fit: contain; }
+/* ═══════════════ GAME SCREEN ═══════════════ */
 
-.effect-area {
-  position: absolute; top: 130px; left: 50%; transform: translateX(-50%);
-  width: 160px; height: 160px; pointer-events: none; z-index: 3;
-}
-.effect-img { width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.05s; }
-.effect-img.show { opacity: 1; }
+.mini-logo-img { height: auto; object-fit: contain; width: 315px; max-width: 315px; }
+.mini-logo-fb  { display: none; font-size: 20px; font-weight: 900; color: #ffb0e0; text-shadow: 0 0 8px #f0a; white-space: nowrap; }
 
-.pon-btn-area {
-  position: absolute; bottom: 40px; left: 0; right: 0;
-  display: flex; justify-content: center;
+#g-instruct {
+  position: absolute; top: 196px; left: 50%; transform: translateX(-50%);
+  z-index: 4; width: 300px; text-align: center;
 }
-.pon-btn { border: none; background: none; padding: 0; cursor: pointer; active-transform: scale(0.95); }
-.pon-btn img { width: 180px; object-fit: contain; transition: transform 0.08s; }
-.pon-btn:active img { transform: scale(0.92); }
-.pon-btn-fallback {
-  display: none;
-  background: #e84393; color: #fff; font-size: 32px; font-weight: bold;
-  border: none; border-radius: 50%; width: 160px; height: 160px; cursor: pointer;
+#g-instruct img { width: 288px; object-fit: contain; }
+#g-instruct .fb {
+  display: none; background: rgba(255,180,0,0.9); border-radius: 16px;
+  padding: 6px 14px; font-size: 19px; font-weight: 900; color: #5a2000;
+  border: 2px solid #ff9900; text-align: center;
+}
+
+/* balloons — CSS box primary */
+.balloon {
+  position: absolute; z-index: 3; pointer-events: none;
+  width: 100px; border-radius: 14px; padding: 9px 10px;
+}
+.balloon img.b-bg { display: none; }
+.balloon .b-txt { font-size: 12px; font-weight: 900; line-height: 1.5; color: #1a1a4a; }
+.b-blue  { background: rgba(175,210,255,0.96); border: 2px solid #4499ff; }
+.b-pink  { background: rgba(255,185,230,0.96); border: 2px solid #ff55cc; }
+.b-green { background: rgba(155,240,185,0.96); border: 2px solid #22cc66; }
+
+/* TAKORON */
+#g-takoron { position: absolute; top: 318px; left: 50%; transform: translateX(-50%); z-index: 4; width: 196px; }
+#g-takoron img { width: 196px; object-fit: contain; transition: transform 0.08s; }
+#g-takoron img.hit { transform: scale(1.18); }
+
+/* MIKARO */
+#g-mikaro { position: absolute; top: 535px; left: 24px; z-index: 3; }
+#g-mikaro img { width: 112px; object-fit: contain; }
+
+/* taiko */
+#g-taiko { position: absolute; top: 505px; left: 50%; transform: translateX(-50%); z-index: 4; }
+#g-taiko img { width: 190px; object-fit: contain; }
+
+/* star burst (behind takoron) */
+#eff-star {
+  position: absolute; top: 300px; left: 50%; transform: translateX(-50%);
+  width: 220px; z-index: 2; pointer-events: none;
+  opacity: 0; transition: opacity 0.1s;
+}
+#eff-star.show { opacity: 1; }
+
+/* hit effects layer — effect_pon */
+#eff-layer {
+  position: absolute; top: 245px; left: 50%; transform: translateX(-50%);
+  width: 168px; height: 168px; z-index: 6; pointer-events: none;
+}
+#eff-layer img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.05s; }
+#eff-layer img.show { opacity: 1; }
+
+/* effect_good */
+#eff-good {
+  position: absolute; top: 640px; left: 50%; transform: translateX(-50%);
+  width: 228px; z-index: 7; pointer-events: none;
+  opacity: 0; transition: opacity 0.07s;
+}
+#eff-good.show { opacity: 1; }
+
+/* iine popup */
+#iine {
+  position: absolute; top: 650px; left: 50%; transform: translateX(-50%) scale(0);
+  z-index: 8; pointer-events: none;
+  font-size: 54px; font-weight: 900;
+  color: #fff; text-shadow: 0 0 24px #ff0090, 0 4px 0 #c00060;
+  opacity: 0; white-space: nowrap;
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), opacity 0.1s;
+}
+#iine.show { transform: translateX(-50%) scale(1); opacity: 1; }
+
+/* PON button */
+#pon-area { position: absolute; top: 705px; left: 50%; transform: translateX(-50%); z-index: 5; }
+.pon-btn { border: none; background: none; padding: 0; cursor: pointer; }
+.pon-btn img { width: 255px; object-fit: contain; transition: transform 0.08s; }
+.pon-btn:active img { transform: scale(0.90); }
+#pon-fb-btn {
+  display: none; background: linear-gradient(135deg, #e84393, #ff0040);
+  color: #fff; font-size: 40px; font-weight: 900;
+  border: none; border-radius: 50%; width: 220px; height: 220px; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(232,67,147,0.75);
+  align-items: center; justify-content: center;
+}
+/* game screen top bar: individual absolute positions */
+#game-screen .top-bar { display: block; }
+#sp-chain   { position: absolute; left: 10px;  top: 8px; width: 78px;  height: 50px; }
+#sp-score-g { position: absolute; right: 10px; top: 8px; width: 126px; height: 50px; }
+#game-screen .top-bar .mid {
+  position: absolute; left: 50%; top: 36px; transform: translateX(-50%);
+  width: 315px; display: flex; flex: none; align-items: center; justify-content: center;
 }
 </style>
 </head>
 <body>
 
-<!-- Start Screen -->
+<!-- ═════ START SCREEN ═════ -->
 <div id="start-screen" class="screen active">
-  <div class="bg bg-fallback" id="start-bg" style="background-image:url('assets/bg/start_bg.png')"></div>
-  <div class="content">
-    <img class="logo-img" src="assets/logo/takoron_title.png" alt="TAKORON" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
-    <div id="logo-fallback" style="display:none; font-size:36px; font-weight:bold; color:#fff; text-shadow:0 0 16px #f0a;">TAKORON<br><span style="font-size:18px;">たいこゲーム</span></div>
+  <div class="bg bg-fallback" style="background-image:url('assets/bg/start_bg.png')"></div>
+
+  <!-- top bar -->
+  <div class="top-bar">
+    <div class="s-panel star-col" id="sp-star">
+      <img class="p-bg" src="assets/ui/star_panel.png" alt=""
+        onerror="document.getElementById('sp-star').classList.add('no-img'); this.remove()">
+      <div class="p-inner"><span class="p-val">★★★</span></div>
+    </div>
+    <div class="mid"></div>
+    <div class="s-panel score-col" id="sp-score-s">
+      <img class="p-bg" src="assets/ui/score_panel.png" alt=""
+        onerror="document.getElementById('sp-score-s').classList.add('no-img'); this.remove()">
+      <div class="p-inner">
+        <span class="p-label">スコア</span>
+        <span class="p-val">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- logo -->
+  <div id="s-logo">
+    <img src="assets/logo/takoron_title.png" alt="TAKORON たいこゲーム"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+    <div class="fb">TAKORON<span>たいこゲーム</span></div>
+  </div>
+
+  <!-- instruction banner -->
+  <div id="s-instruct">
+    <img src="assets/ui/instruction_banner.png" alt=""
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
+    <span class="fb">ポンボタンをおして たいこをならそう！</span>
+  </div>
+
+  <!-- TAKORON start pose (center-right) -->
+  <div id="s-takoron">
+    <img src="assets/characters/takoron_start_pose.png" alt="TAKORON" onerror="this.style.display='none'">
+  </div>
+
+  <!-- MIKARO start pose (lower-left) -->
+  <div id="s-mikaro">
+    <img src="assets/characters/mikaro_start_pose.png" alt="MIKARO" onerror="this.style.display='none'">
+  </div>
+
+  <!-- Taiko drum (center-lower) -->
+  <div id="s-taiko">
+    <img src="assets/objects/taiko_drum.png" alt="" onerror="this.style.display='none'">
+  </div>
+
+  <!-- decorative -->
+  <img class="deco" src="assets/effects/effect_kira.png" alt="" style="z-index:2;width:58px;top:75px;left:18px;opacity:0.85" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_kira.png" alt="" style="z-index:2;width:42px;top:152px;right:14px;opacity:0.75" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_music_notes.png" alt="" style="z-index:2;width:66px;top:418px;left:4px;opacity:0.65" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_music_notes.png" alt="" style="z-index:2;width:50px;top:348px;right:8px;opacity:0.6;transform:scaleX(-1)" onerror="this.remove()">
+
+  <!-- start button -->
+  <div id="s-btn-wrap">
     <button class="start-btn" onclick="startGame()">
       <img src="assets/ui/button_start.png" alt="スタート"
-        onerror="this.parentElement.style.display='none'; document.getElementById('start-fallback-btn').style.display='block'">
+        onerror="this.style.display='none'; document.getElementById('s-btn-fb').style.display='block'">
     </button>
-    <button id="start-fallback-btn" class="start-btn-fallback" onclick="startGame()">スタート！</button>
+    <button id="s-btn-fb" onclick="startGame()">スタート！</button>
   </div>
 </div>
 
-<!-- Game Screen -->
+
+<!-- ═════ GAME SCREEN ═════ -->
 <div id="game-screen" class="screen">
-  <div class="bg bg-fallback" id="game-bg" style="background-image:url('assets/bg/game_bg.png')"></div>
-  <div class="game-layout">
+  <div class="bg bg-fallback" style="background-image:url('assets/bg/game_bg.png')"></div>
 
-    <!-- Score -->
-    <div class="score-area">
-      <div class="score-panel" id="score-panel">
-        <img src="assets/ui/score_panel.png" alt="" onerror="this.style.display='none'; document.getElementById('score-fallback').style.display='flex'">
-        <span class="score-text" id="score-text">0</span>
+  <!-- top bar: chain | logo | score -->
+  <div class="top-bar">
+    <div class="s-panel chain-col" id="sp-chain">
+      <img class="p-bg" src="assets/ui/chain_panel.png" alt=""
+        onerror="document.getElementById('sp-chain').classList.add('no-img'); this.remove()">
+      <div class="p-inner">
+        <span class="p-label">れんだ</span>
+        <span class="p-val" id="chain-val">0</span>
       </div>
-      <div id="score-fallback" class="score-fallback" style="display:none">スコア: <span id="score-text2">0</span></div>
     </div>
-
-    <!-- TAKORON -->
-    <div class="takoron-area">
-      <img class="takoron-img" id="takoron" src="assets/characters/takoron_idle.png" alt="TAKORON"
-        onerror="this.src=''; this.style.background='radial-gradient(#f05 40%,transparent 70%)'; this.style.width='160px'; this.style.height='160px'; this.style.borderRadius='50%'">
+    <div class="mid">
+      <img class="mini-logo-img" src="assets/logo/takoron_title.png" alt="TAKORON"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+      <span class="mini-logo-fb">TAKORON</span>
     </div>
-
-    <!-- Effect -->
-    <div class="effect-area">
-      <img class="effect-img" id="effect-pon" src="assets/effects/effect_pon.png" alt="">
+    <div class="s-panel score-col" id="sp-score-g">
+      <img class="p-bg" src="assets/ui/score_panel.png" alt=""
+        onerror="document.getElementById('sp-score-g').classList.add('no-img'); this.remove()">
+      <div class="p-inner">
+        <span class="p-label">スコア</span>
+        <span class="p-val" id="score-val">0</span>
+      </div>
     </div>
+  </div>
 
-    <!-- Taiko drum -->
-    <div class="taiko-area">
-      <img class="taiko-img" src="assets/objects/taiko_drum.png" alt=""
-        onerror="this.style.display='none'">
-    </div>
+  <!-- instruction banner -->
+  <div id="g-instruct">
+    <img src="assets/ui/instruction_banner.png" alt=""
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'">
+    <span class="fb">ポンボタンをおして たいこをならそう！</span>
+  </div>
 
-    <!-- PON button -->
-    <div class="pon-btn-area">
-      <button class="pon-btn" id="pon-btn" onclick="pon()">
-        <img src="assets/ui/button_pon.png" alt="ポン"
-          onerror="this.parentElement.style.display='none'; document.getElementById('pon-fallback-btn').style.display='block'">
-      </button>
-      <button id="pon-fallback-btn" class="pon-btn-fallback" onclick="pon()">ポン！</button>
-    </div>
+  <!-- balloon blue: left -->
+  <div class="balloon b-blue" style="top:355px; left:14px; width:118px; min-height:86px">
+    <div class="b-txt">すごーい！<br>じょうずー！</div>
+  </div>
 
+  <!-- balloon pink: right upper -->
+  <div class="balloon b-pink" style="top:354px; right:18px; width:110px; min-height:94px">
+    <div class="b-txt">おせば<br>だいたい<br>せいこう！</div>
+  </div>
+
+  <!-- balloon green: right mid -->
+  <div class="balloon b-green" style="top:455px; right:18px; width:110px; min-height:82px">
+    <div class="b-txt">ずれても<br>だいじょうぶ♪</div>
+  </div>
+
+  <!-- balloon blue2: right lower -->
+  <div class="balloon b-blue" style="top:560px; right:18px; width:122px; min-height:96px">
+    <div class="b-txt">れんだで<br>もりあがる！</div>
+  </div>
+
+  <!-- star burst behind takoron -->
+  <img id="eff-star" src="assets/effects/effect_star_burst.png" alt="" onerror="this.remove()">
+
+  <!-- TAKORON -->
+  <div id="g-takoron">
+    <img id="takoron" src="assets/characters/takoron_idle.png" alt="TAKORON"
+      onerror="this.style.background='radial-gradient(#f05 40%,transparent 70%)'; this.style.borderRadius='50%'">
+  </div>
+
+  <!-- effect_good -->
+  <img id="eff-good" src="assets/effects/effect_good.png" alt="" onerror="this.remove()">
+
+  <!-- hit effect layer -->
+  <div id="eff-layer">
+    <img id="eff-pon"   src="assets/effects/effect_pon.png"       alt="" onerror="this.remove()">
+    <img id="eff-kira"  src="assets/effects/effect_kira.png"      alt="" onerror="this.remove()">
+    <img id="eff-flash" src="assets/effects/effect_hit_flash.png" alt="" onerror="this.remove()">
+  </div>
+
+  <!-- iine popup -->
+  <div id="iine">いいね！</div>
+
+  <!-- MIKARO game (lower-left) -->
+  <div id="g-mikaro">
+    <img src="assets/characters/mikaro_start_pose.png" alt="MIKARO" onerror="this.style.display='none'">
+  </div>
+
+  <!-- decorative: music notes & kira -->
+  <img class="deco" src="assets/effects/effect_music_notes.png" alt="" style="z-index:1;width:34px;top:282px;left:42px;opacity:0.7" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_music_notes.png" alt="" style="z-index:1;width:34px;top:280px;right:42px;opacity:0.7;transform:scaleX(-1)" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_music_notes.png" alt="" style="z-index:1;width:46px;top:520px;right:52px;opacity:0.55" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_kira.png" alt="" style="z-index:2;width:22px;top:455px;left:144px;opacity:0.85" onerror="this.remove()">
+  <img class="deco" src="assets/effects/effect_kira.png" alt="" style="z-index:2;width:22px;top:463px;right:136px;opacity:0.85" onerror="this.remove()">
+
+  <!-- taiko drum -->
+  <div id="g-taiko">
+    <img src="assets/objects/taiko_drum.png" alt="" onerror="this.style.display='none'">
+  </div>
+
+  <!-- PON button -->
+  <div id="pon-area">
+    <button class="pon-btn" onclick="pon()">
+      <img src="assets/ui/button_pon.png" alt="ポン"
+        onerror="this.parentElement.style.display='none'; document.getElementById('pon-fb-btn').style.display='flex'">
+    </button>
+    <button id="pon-fb-btn" onclick="pon()">ポン！</button>
   </div>
 </div>
 
 <script>
 let score = 0;
+let chain = 0;
 
 function startGame() {
   document.getElementById('start-screen').classList.remove('active');
   document.getElementById('game-screen').classList.add('active');
 }
 
-let hitTimeout = null;
-let effectTimeout = null;
+let hitT = null, starT = null, goodT = null, iineT = null;
+
+function showFor(id, ms) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('show');
+  return setTimeout(() => el.classList.remove('show'), ms);
+}
 
 function pon() {
   score += 10;
-  document.getElementById('score-text').textContent = score;
-  document.getElementById('score-text2').textContent = score;
+  chain += 1;
+  document.getElementById('score-val').textContent = score;
+  document.getElementById('chain-val').textContent = chain;
 
   // Takoron hit animation
-  const takoron = document.getElementById('takoron');
-  takoron.src = 'assets/characters/takoron_hit_center.png';
-  takoron.classList.add('hit');
-  clearTimeout(hitTimeout);
-  hitTimeout = setTimeout(() => {
-    takoron.src = 'assets/characters/takoron_idle.png';
-    takoron.classList.remove('hit');
-  }, 180);
+  const tk = document.getElementById('takoron');
+  if (tk) {
+    tk.src = 'assets/characters/takoron_hit_center.png';
+    tk.classList.add('hit');
+    clearTimeout(hitT);
+    hitT = setTimeout(() => { tk.src = 'assets/characters/takoron_idle.png'; tk.classList.remove('hit'); }, 180);
+  }
 
-  // Effect
-  const effect = document.getElementById('effect-pon');
-  effect.classList.add('show');
-  clearTimeout(effectTimeout);
-  effectTimeout = setTimeout(() => effect.classList.remove('show'), 200);
+  // Hit effect layer (pon + kira + flash)
+  ['eff-pon', 'eff-kira', 'eff-flash'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 200);
+  });
+
+  // Star burst
+  clearTimeout(starT);
+  starT = showFor('eff-star', 360);
+
+  // effect_good
+  clearTimeout(goodT);
+  goodT = showFor('eff-good', 430);
+
+  // Iine popup (bounce-in)
+  const iine = document.getElementById('iine');
+  iine.classList.remove('show');
+  void iine.offsetWidth;
+  iine.classList.add('show');
+  clearTimeout(iineT);
+  iineT = setTimeout(() => iine.classList.remove('show'), 660);
 }
 
 document.addEventListener('keydown', (e) => {
