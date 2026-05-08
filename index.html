@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TAKORON たいこゲーム</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 390px; height: 844px;
+  overflow: hidden;
+  background: #1a0a2e;
+  font-family: sans-serif;
+  position: relative;
+  margin: 0 auto;
+}
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; }
+.screen.active { display: flex; }
+.bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  z-index: 0;
+}
+.bg-fallback { background-color: #2a0a4e; }
+.content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
+
+/* Start screen */
+#start-screen .logo-img { width: 280px; min-height: 80px; object-fit: contain; }
+#start-screen .start-btn { cursor: pointer; border: none; background: none; padding: 0; }
+#start-screen .start-btn img { width: 200px; min-height: 60px; object-fit: contain; }
+#start-screen .start-btn-fallback {
+  display: none;
+  background: #ff6b35; color: #fff; font-size: 24px; font-weight: bold;
+  border: none; border-radius: 40px; padding: 16px 48px; cursor: pointer;
+}
+
+/* Game screen */
+#game-screen { background: #0a0a1e; }
+.game-layout { width: 100%; height: 844px; display: flex; flex-direction: column; align-items: center; position: relative; }
+.score-area { position: absolute; top: 16px; left: 0; right: 0; display: flex; justify-content: center; z-index: 2; }
+.score-panel { position: relative; display: flex; align-items: center; justify-content: center; }
+.score-panel img { width: 200px; min-height: 60px; object-fit: contain; }
+.score-text {
+  position: absolute; font-size: 28px; font-weight: bold;
+  color: #fff; text-shadow: 0 0 8px #f0a;
+}
+.score-fallback {
+  background: rgba(0,0,0,0.6); border: 2px solid #f0a;
+  border-radius: 12px; padding: 8px 24px;
+  font-size: 28px; font-weight: bold; color: #fff;
+}
+
+.takoron-area {
+  position: absolute; top: 100px; left: 0; right: 0;
+  display: flex; justify-content: center; align-items: flex-end;
+  height: 280px;
+}
+.takoron-img { width: 200px; object-fit: contain; transition: transform 0.08s; }
+.takoron-img.hit { transform: scale(1.15); }
+
+.taiko-area {
+  position: absolute; bottom: 220px; left: 0; right: 0;
+  display: flex; justify-content: center;
+}
+.taiko-img { width: 180px; object-fit: contain; }
+
+.effect-area {
+  position: absolute; top: 130px; left: 50%; transform: translateX(-50%);
+  width: 160px; height: 160px; pointer-events: none; z-index: 3;
+}
+.effect-img { width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.05s; }
+.effect-img.show { opacity: 1; }
+
+.pon-btn-area {
+  position: absolute; bottom: 40px; left: 0; right: 0;
+  display: flex; justify-content: center;
+}
+.pon-btn { border: none; background: none; padding: 0; cursor: pointer; active-transform: scale(0.95); }
+.pon-btn img { width: 180px; object-fit: contain; transition: transform 0.08s; }
+.pon-btn:active img { transform: scale(0.92); }
+.pon-btn-fallback {
+  display: none;
+  background: #e84393; color: #fff; font-size: 32px; font-weight: bold;
+  border: none; border-radius: 50%; width: 160px; height: 160px; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- Start Screen -->
+<div id="start-screen" class="screen active">
+  <div class="bg bg-fallback" id="start-bg" style="background-image:url('assets/bg/start_bg.png')"></div>
+  <div class="content">
+    <img class="logo-img" src="assets/logo/takoron_title.png" alt="TAKORON" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
+    <div id="logo-fallback" style="display:none; font-size:36px; font-weight:bold; color:#fff; text-shadow:0 0 16px #f0a;">TAKORON<br><span style="font-size:18px;">たいこゲーム</span></div>
+    <button class="start-btn" onclick="startGame()">
+      <img src="assets/ui/button_start.png" alt="スタート"
+        onerror="this.parentElement.style.display='none'; document.getElementById('start-fallback-btn').style.display='block'">
+    </button>
+    <button id="start-fallback-btn" class="start-btn-fallback" onclick="startGame()">スタート！</button>
+  </div>
+</div>
+
+<!-- Game Screen -->
+<div id="game-screen" class="screen">
+  <div class="bg bg-fallback" id="game-bg" style="background-image:url('assets/bg/game_bg.png')"></div>
+  <div class="game-layout">
+
+    <!-- Score -->
+    <div class="score-area">
+      <div class="score-panel" id="score-panel">
+        <img src="assets/ui/score_panel.png" alt="" onerror="this.style.display='none'; document.getElementById('score-fallback').style.display='flex'">
+        <span class="score-text" id="score-text">0</span>
+      </div>
+      <div id="score-fallback" class="score-fallback" style="display:none">スコア: <span id="score-text2">0</span></div>
+    </div>
+
+    <!-- TAKORON -->
+    <div class="takoron-area">
+      <img class="takoron-img" id="takoron" src="assets/characters/takoron_idle.png" alt="TAKORON"
+        onerror="this.src=''; this.style.background='radial-gradient(#f05 40%,transparent 70%)'; this.style.width='160px'; this.style.height='160px'; this.style.borderRadius='50%'">
+    </div>
+
+    <!-- Effect -->
+    <div class="effect-area">
+      <img class="effect-img" id="effect-pon" src="assets/effects/effect_pon.png" alt="">
+    </div>
+
+    <!-- Taiko drum -->
+    <div class="taiko-area">
+      <img class="taiko-img" src="assets/objects/taiko_drum.png" alt=""
+        onerror="this.style.display='none'">
+    </div>
+
+    <!-- PON button -->
+    <div class="pon-btn-area">
+      <button class="pon-btn" id="pon-btn" onclick="pon()">
+        <img src="assets/ui/button_pon.png" alt="ポン"
+          onerror="this.parentElement.style.display='none'; document.getElementById('pon-fallback-btn').style.display='block'">
+      </button>
+      <button id="pon-fallback-btn" class="pon-btn-fallback" onclick="pon()">ポン！</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let score = 0;
+
+function startGame() {
+  document.getElementById('start-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+}
+
+let hitTimeout = null;
+let effectTimeout = null;
+
+function pon() {
+  score += 10;
+  document.getElementById('score-text').textContent = score;
+  document.getElementById('score-text2').textContent = score;
+
+  // Takoron hit animation
+  const takoron = document.getElementById('takoron');
+  takoron.src = 'assets/characters/takoron_hit_center.png';
+  takoron.classList.add('hit');
+  clearTimeout(hitTimeout);
+  hitTimeout = setTimeout(() => {
+    takoron.src = 'assets/characters/takoron_idle.png';
+    takoron.classList.remove('hit');
+  }, 180);
+
+  // Effect
+  const effect = document.getElementById('effect-pon');
+  effect.classList.add('show');
+  clearTimeout(effectTimeout);
+  effectTimeout = setTimeout(() => effect.classList.remove('show'), 200);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && document.getElementById('game-screen').classList.contains('active')) {
+    e.preventDefault();
+    pon();
+  }
+});
+</script>
+</body>
+</html>
